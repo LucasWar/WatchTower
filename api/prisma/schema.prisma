@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model logs {
+  id                String    @id @default(uuid()) @db.Uuid
+  service           String
+  module            String  
+  action            String
+  level             String
+  message           String
+  traceId           String    @default(now()) @map("trace_id")
+  userId            String    @default(now()) @map("user_id")
+  metadata          Json?         
+  createdAt         DateTime  @default(now()) @map("created_at")
+}
