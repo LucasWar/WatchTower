@@ -14,8 +14,12 @@ export class LogsRepository {
         createDto.metadata === null ? Prisma.JsonNull : createDto.metadata,
     };
 
-    await this.prismaService.logs.create({
+    return await this.prismaService.logs.create({
       data,
     });
+  }
+
+  async findAll() {
+    return await this.prismaService.logs.findMany();
   }
 }

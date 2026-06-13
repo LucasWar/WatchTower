@@ -7,7 +7,10 @@ export class LogsService {
   constructor(private readonly logRepo: LogsRepository) {}
 
   create(createLogDto: CreateLogDto) {
-    console.log("OLA")
     return this.logRepo.create(createLogDto);
+  }
+
+  findAll() {
+    return this.logRepo.findAll();
   }
 }

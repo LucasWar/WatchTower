@@ -5,6 +5,7 @@ import { LogsRepository } from './logs.repository';
 import { PrismaService } from 'src/database/database.service';
 import { BullModule } from '@nestjs/bullmq';
 import { LogsProcessor } from './logs.processor';
+import { LogsGateway } from './logs.gateway';
 
 @Module({
   imports: [
@@ -13,6 +14,12 @@ import { LogsProcessor } from './logs.processor';
     }),
   ],
   controllers: [LogsController],
-  providers: [LogsService, LogsRepository, PrismaService, LogsProcessor],
+  providers: [
+    LogsGateway,
+    LogsService,
+    LogsRepository,
+    PrismaService,
+    LogsProcessor,
+  ],
 })
 export class LogsModule {}

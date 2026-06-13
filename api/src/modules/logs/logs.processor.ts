@@ -2,10 +2,14 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { LogsService } from './logs.service';
 import { CreateLogDto } from './dto/create-log.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Processor('logs_queue')
 export class LogsProcessor extends WorkerHost {
-  constructor(private readonly logService: LogsService) {
+  constructor(
+    private readonly logService: LogsService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {
     super();
   }
 
@@ -13,7 +17,9 @@ export class LogsProcessor extends WorkerHost {
     switch (job.name) {
       case 'process_log': {
         const logData = job.data;
-        await this.logService.create(logData);
+        const savedLog = await this.logService.create(logData);
+
+        this.eventEmitter.emit('log.created', savedLog);
 
         break;
       }

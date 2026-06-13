@@ -6,15 +6,31 @@ datasource db {
   provider = "postgresql"
 }
 
-model logs {
+model Clients {
   id        String   @id @default(uuid()) @db.Uuid
+  email     String
+  password  String
+
+  logs      Logs[]
+
+  @@map("clients")
+}
+
+model Logs {
+  id        String    @id @default(uuid()) @db.Uuid
   service   String
   module    String
   action    String
   level     String
   message   String
-  traceId   String   @map("trace_id")
-  userId    String   @map("user_id")
+  traceId   String    @map("trace_id")
+  userId    String    @map("user_id")
   metadata  Json?
+
+  clientId  String    @db.Uuid  @map("client_id")
+  client    Clients   @relation(fields: [clientId], references: [id])
+
   createdAt DateTime? @map("created_at") @default(now())
+
+  @@map("logs")
 }
