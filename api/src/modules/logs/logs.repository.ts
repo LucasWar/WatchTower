@@ -8,10 +8,15 @@ export class LogsRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createDto: CreateLogDto) {
-    const data: Prisma.logsCreateInput = {
-      ...createDto,
-      metadata:
-        createDto.metadata === null ? Prisma.JsonNull : createDto.metadata,
+    const { clientId, ...dto } = createDto;
+    const data: Prisma.LogsCreateInput = {
+      ...dto,
+      metadata: dto.metadata === null ? Prisma.JsonNull : dto.metadata,
+      client: {
+        connect: {
+          id: clientId,
+        },
+      },
     };
 
     return await this.prismaService.logs.create({

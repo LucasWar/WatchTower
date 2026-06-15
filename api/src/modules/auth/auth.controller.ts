@@ -1,13 +1,54 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Controller, Post, Body, HttpCode, Req, Res } from '@nestjs/common';
+import { AuthService } from './services/auth.service';
 import { SingInDto } from './dto/singIn.dto';
+import { RegisterDto } from './dto/regsiter.dto';
+import type { Response, Request } from 'express';
 
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  private setRefreshToken(response: Response, refreshToken: string){
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+  }
+
   @Post('singIn')
-  create(@Body() createAuthDto: SingInDto) {
-    return this.authService.create(createAuthDto);
+  @HttpCode(200)
+  async create(
+    @Body() singInDto: SingInDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const { accessToken, refreshToken } =
+      await this.authService.singIn(singInDto);
+
+    this.setRefreshToken(response, refreshToken);
+
+    return { accessToken };
+  }
+
+  @Post('singUp')
+  singUp(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const oldRefreshToken = request.cookies['refresh_token'] as
+      | string
+      | undefined;
+
+    const { accessToken, refreshToken } =
+      await this.authService.refresh(oldRefreshToken);
+    this.setRefreshToken(response, refreshToken);
+
+    return { accessToken };
   }
 }
