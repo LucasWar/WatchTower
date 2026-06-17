@@ -13,6 +13,12 @@ import { LogsService } from './logs.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
+import { JwtService } from '@nestjs/jwt';
+import { CurrentEnterpriseId } from 'src/shared/decorators/current-enterprise.decorator';
+
+interface JwtEnterprise {
+  sub: string;
+}
 
 @WebSocketGateway({
   namespace: '/logs',
@@ -24,12 +30,20 @@ export class LogsGateway implements OnGatewayConnection {
 
   constructor(
     private logsService: LogsService,
+    private readonly jwtService: JwtService,
     @InjectQueue('logs_queue') private readonly logsQueue: Queue,
   ) {}
 
   async handleConnection(client: Socket) {
+    const token = client.handshake.auth?.token as string;
+    console.log(token)
     try {
-      console.log('✅ Cliente conectou:', client.id);
+      const payload: JwtEnterprise = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_ACCESS_SECRET_ENTERPRISE,
+      });
+
+      client.data.user = payload;
+
       const logs = await this.logsService.findAll();
       client.emit('log_history', logs);
     } catch (error) {
@@ -37,13 +51,15 @@ export class LogsGateway implements OnGatewayConnection {
     }
   }
 
-  @UsePipes(new ValidationPipe())
   @SubscribeMessage('create_log')
+  @UsePipes(new ValidationPipe())
   async handleCreateLog(
     @ConnectedSocket() client: Socket,
-    @MessageBody() dto: CreateLogDto,
+    @CurrentEnterpriseId() enterpriseId: string,
+    @MessageBody()
+    createDto: CreateLogDto,
   ) {
-    await this.logsQueue.add('process_log', dto);
+    await this.logsQueue.add('process_log', { dto: createDto, enterpriseId });
   }
 
   @OnEvent('log.created')

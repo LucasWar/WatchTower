@@ -53,30 +53,30 @@ export class AuthService {
   async singIn(singInDto: SingInDto) {
     const { email, password } = singInDto;
 
-    const client = await this.authRepo.findOneByEmail(email);
+    const user = await this.authRepo.findOneByEmail(email);
 
-    if (!client) {
+    if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    const isValid = await bcrypt.compare(password, client.password);
+    const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
       throw new ConflictException('Senha incorreta');
     }
 
     const { accessToken, refreshToken, jti } = await this.generateTokens(
-      client.id,
+      user.id,
       email,
     );
 
-    await this.authRepo.createRefreshToken(jti, client.id);
+    await this.authRepo.createRefreshToken(jti, user.id);
 
     return { accessToken, refreshToken };
   }
 
   async register(registerDto: RegisterDto) {
-    const { email, password } = registerDto;
+    const { email, password, enterpriseId } = registerDto;
 
     const ownerEmail = await this.authRepo.findOneByEmail(email);
 
@@ -86,9 +86,13 @@ export class AuthService {
 
     const hashPassword = await bcrypt.hash(password, 7);
 
-    const newClient = await this.authRepo.register(email, hashPassword);
+    const newuser = await this.authRepo.register(
+      email,
+      hashPassword,
+      enterpriseId,
+    );
 
-    return newClient;
+    return newuser;
   }
 
   async refresh(token: string | undefined) {
@@ -105,7 +109,9 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token invalido');
     }
 
-    const session = await this.authRepo.verificRefreshToken(validRefreshToken.jti)
+    const session = await this.authRepo.verificRefreshToken(
+      validRefreshToken.jti,
+    );
 
     if (!session) {
       throw new UnauthorizedException('Seção invalida');
@@ -119,17 +125,17 @@ export class AuthService {
       throw new UnauthorizedException('Seção foi encerrada');
     }
 
-    const client = await this.authRepo.findClientById(session.clientId);
+    const user = await this.authRepo.findUserById(session.userId);
 
-    if (!client) {
-      throw new NotFoundException('Cliente não encontrado');
+    if (!user) {
+      throw new NotFoundException('usere não encontrado');
     }
 
     const {
       accessToken,
       jti: newJti,
       refreshToken,
-    } = await this.generateTokens(client.id, client.email);
+    } = await this.generateTokens(user.id, user.email);
 
     await this.authRepo.updateRefreshToken(validRefreshToken.jti, newJti);
 

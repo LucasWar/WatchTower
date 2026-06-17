@@ -6,45 +6,58 @@ datasource db {
   provider = "postgresql"
 }
 
-model Clients {
-  id              String   @id @default(uuid()) @db.Uuid
-  email           String   @unique
-  password        String
+model Enterprises {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String    
+  apiId           String    @unique
+  apiKey          String    @unique 
+
+  cnpj            String    @unique
 
   logs            Logs[]
+  users           Users[]
+  @@map("enterprise")
+}
+
+model Users {
+  id              String          @id @default(uuid()) @db.Uuid
+  email           String          @unique
+  password        String
+  enterpriseId    String          @map("enterprise_id") @db.Uuid
+  enterprises     Enterprises     @relation(fields: [enterpriseId], references: [id], onDelete: Cascade)
   refreshToken    RefreshToken[]
-  @@map("clients")
+  @@map("users")
 }
 
 
 model RefreshToken {
-  id                    String    @id @default(uuid()) @db.Uuid
+  id              String    @id @default(uuid()) @db.Uuid
 
-  clientId              String    @db.Uuid @map("client_id")
-  clients               Clients   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  userId          String    @db.Uuid @map("client_id")
+  users           Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  jti                   String    @unique
-  expiresAt             DateTime  @map("expires_at")
-  revokedAt             DateTime? @map("revoked_at")
+  jti             String    @unique
+  expiresAt       DateTime  @map("expires_at")
+  revokedAt       DateTime? @map("revoked_at")
 
   @@map("refresh_token")
 }
 
 model Logs {
-  id        String    @id @default(uuid()) @db.Uuid
-  service   String
-  module    String
-  action    String
-  level     String
-  message   String
-  traceId   String    @map("trace_id")
-  userId    String    @map("user_id")
-  metadata  Json?
+  id              String    @id @default(uuid()) @db.Uuid
+  service         String
+  module          String
+  action          String
+  level           String
+  message         String
+  traceId         String    @map("trace_id")
+  userId          String    @map("user_id")
+  metadata        Json?
 
-  clientId  String    @db.Uuid  @map("client_id")
-  client    Clients   @relation(fields: [clientId], references: [id])
+  enterpriseId    String    @db.Uuid  @map("enterprise_id")
+  enterprise      Enterprises   @relation(fields: [enterpriseId], references: [id])
 
-  createdAt DateTime? @map("created_at") @default(now())
+  createdAt       DateTime? @map("created_at") @default(now())
 
   @@map("logs")
 }

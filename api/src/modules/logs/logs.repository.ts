@@ -7,21 +7,25 @@ import { CreateLogDto } from './dto/create-log.dto';
 export class LogsRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(createDto: CreateLogDto) {
-    const { clientId, ...dto } = createDto;
-    const data: Prisma.LogsCreateInput = {
-      ...dto,
-      metadata: dto.metadata === null ? Prisma.JsonNull : dto.metadata,
-      client: {
-        connect: {
-          id: clientId,
+  async create(createDto: CreateLogDto, enterpriseId: string) {
+    try {
+      const data: Prisma.LogsCreateInput = {
+        ...createDto,
+        metadata:
+          createDto.metadata === null ? Prisma.JsonNull : createDto.metadata,
+        enterprise: {
+          connect: {
+            id: enterpriseId,
+          },
         },
-      },
-    };
+      };
 
-    return await this.prismaService.logs.create({
-      data,
-    });
+      return await this.prismaService.logs.create({
+        data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async findAll() {

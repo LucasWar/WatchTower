@@ -13,11 +13,17 @@ export class LogsProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<CreateLogDto, any, string>): Promise<any> {
+  async process(
+    job: Job<{ dto: CreateLogDto; enterpriseId: string }, any, string>,
+  ): Promise<any> {
     switch (job.name) {
       case 'process_log': {
-        const logData = job.data;
-        const savedLog = await this.logService.create(logData);
+        const logData = job.data.dto;
+
+        const savedLog = await this.logService.create(
+          logData,
+          job.data.enterpriseId,
+        );
 
         this.eventEmitter.emit('log.created', savedLog);
 

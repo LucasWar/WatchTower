@@ -6,8 +6,8 @@ import { LogsRepository } from './logs.repository';
 export class LogsService {
   constructor(private readonly logRepo: LogsRepository) {}
 
-  create(createLogDto: CreateLogDto) {
-    return this.logRepo.create(createLogDto);
+  create(createLogDto: CreateLogDto, enterpriseId: string) {
+    return this.logRepo.create(createLogDto, enterpriseId);
   }
 
   findAll() {

@@ -7,7 +7,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { JwtStrategy } from './modules/auth/services/jwt-strategy.service';
+import { JwtModule } from '@nestjs/jwt';
+import { EnterpriseModule } from './modules/enterprise/enterprise.module';
 
 @Module({
   imports: [
@@ -24,8 +25,13 @@ import { JwtStrategy } from './modules/auth/services/jwt-strategy.service';
     }),
     EventEmitterModule.forRoot(),
     AuthModule,
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+    }),
+    EnterpriseModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy],
+  providers: [AppService],
 })
 export class AppModule {}

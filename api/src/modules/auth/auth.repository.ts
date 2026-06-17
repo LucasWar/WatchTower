@@ -5,18 +5,19 @@ import { PrismaService } from 'src/database/database.service';
 export class AuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
   async findOneByEmail(email: string) {
-    return await this.prismaService.clients.findUnique({
+    return await this.prismaService.users.findUnique({
       where: {
         email,
       },
     });
   }
 
-  async register(email: string, hashPassword: string) {
-    return await this.prismaService.clients.create({
+  async register(email: string, hashPassword: string, enterpriseId: string) {
+    return await this.prismaService.users.create({
       data: {
         email,
         password: hashPassword,
+        enterpriseId,
       },
     });
   }
@@ -29,10 +30,10 @@ export class AuthRepository {
     });
   }
 
-  async createRefreshToken(jti: string, clientId: string) {
+  async createRefreshToken(jti: string, userId: string) {
     return await this.prismaService.refreshToken.create({
       data: {
-        clientId,
+        userId,
         jti,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
@@ -50,8 +51,8 @@ export class AuthRepository {
     });
   }
 
-  async findClientById(id: string) {
-    return await this.prismaService.clients.findUnique({
+  async findUserById(id: string) {
+    return await this.prismaService.users.findUnique({
       where: {
         id,
       },

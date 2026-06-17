@@ -38,10 +38,6 @@ export class CreateLogDto {
   @IsNotEmpty()
   userId!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  clientId!: string;
-
   @IsObject()
   @IsOptional()
   metadata?: Prisma.JsonValue;
