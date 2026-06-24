@@ -1,8 +1,13 @@
+-- CreateEnum
+CREATE TYPE "LogLevel" AS ENUM ('DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL');
+
 -- CreateTable
 CREATE TABLE "enterprise" (
     "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "apiId" TEXT NOT NULL,
     "apiKey" TEXT NOT NULL,
+    "cnpj" TEXT NOT NULL,
 
     CONSTRAINT "enterprise_pkey" PRIMARY KEY ("id")
 );
@@ -34,28 +39,47 @@ CREATE TABLE "logs" (
     "service" TEXT NOT NULL,
     "module" TEXT NOT NULL,
     "action" TEXT NOT NULL,
-    "level" TEXT NOT NULL,
+    "level" "LogLevel" NOT NULL,
     "message" TEXT NOT NULL,
     "trace_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "external_user_id" TEXT,
+    "environment" TEXT,
     "metadata" JSONB,
     "enterprise_id" UUID NOT NULL,
-    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "enterprise_name_key" ON "enterprise"("name");
+CREATE UNIQUE INDEX "enterprise_apiId_key" ON "enterprise"("apiId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "enterprise_apiKey_key" ON "enterprise"("apiKey");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "enterprise_cnpj_key" ON "enterprise"("cnpj");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "refresh_token_jti_key" ON "refresh_token"("jti");
+
+-- CreateIndex
+CREATE INDEX "logs_service_idx" ON "logs"("service");
+
+-- CreateIndex
+CREATE INDEX "logs_module_idx" ON "logs"("module");
+
+-- CreateIndex
+CREATE INDEX "logs_action_idx" ON "logs"("action");
+
+-- CreateIndex
+CREATE INDEX "logs_level_idx" ON "logs"("level");
+
+-- CreateIndex
+CREATE INDEX "logs_trace_id_idx" ON "logs"("trace_id");
 
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_enterprise_id_fkey" FOREIGN KEY ("enterprise_id") REFERENCES "enterprise"("id") ON DELETE CASCADE ON UPDATE CASCADE;

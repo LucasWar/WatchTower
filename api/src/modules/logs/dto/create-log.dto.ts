@@ -1,5 +1,11 @@
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-import { Prisma } from '@prisma/client';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { LogLevel, Prisma } from '@prisma/client';
 
 // export type Json =
 //   | string
@@ -23,8 +29,8 @@ export class CreateLogDto {
   action!: string;
 
   @IsString()
-  @IsNotEmpty()
-  level!: string;
+  @IsEnum(LogLevel)
+  level!: LogLevel;
 
   @IsString()
   @IsNotEmpty()
@@ -36,7 +42,7 @@ export class CreateLogDto {
 
   @IsString()
   @IsNotEmpty()
-  userId!: string;
+  externalUserId!: string;
 
   @IsObject()
   @IsOptional()

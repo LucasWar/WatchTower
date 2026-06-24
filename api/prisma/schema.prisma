@@ -6,6 +6,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+  FATAL
+}
+
 model Enterprises {
   id              String    @id @default(uuid()) @db.Uuid
   name            String    
@@ -44,20 +52,34 @@ model RefreshToken {
 }
 
 model Logs {
-  id              String    @id @default(uuid()) @db.Uuid
-  service         String
-  module          String
-  action          String
-  level           String
-  message         String
-  traceId         String    @map("trace_id")
-  userId          String    @map("user_id")
-  metadata        Json?
+  id                String @id @default(uuid()) @db.Uuid
 
-  enterpriseId    String    @db.Uuid  @map("enterprise_id")
-  enterprise      Enterprises   @relation(fields: [enterpriseId], references: [id])
+  service           String
+  module            String
+  action            String
 
-  createdAt       DateTime? @map("created_at") @default(now())
+  level             LogLevel
+
+  message           String
+
+  traceId           String @map("trace_id")
+
+  externalUserId    String? @map("external_user_id")
+
+  environment       String?
+
+  metadata          Json?
+
+  enterpriseId      String @db.Uuid @map("enterprise_id")
+  enterprise        Enterprises @relation(fields: [enterpriseId], references: [id])
+
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([service])
+  @@index([module])
+  @@index([action])
+  @@index([level])
+  @@index([traceId])
 
   @@map("logs")
 }

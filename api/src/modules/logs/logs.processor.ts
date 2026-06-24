@@ -25,7 +25,7 @@ export class LogsProcessor extends WorkerHost {
           job.data.enterpriseId,
         );
 
-        this.eventEmitter.emit('log.created', savedLog);
+        this.eventEmitter.emit('log.created', savedLog, job.data.enterpriseId);
 
         break;
       }

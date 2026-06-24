@@ -36,18 +36,22 @@ export class LogsGateway implements OnGatewayConnection {
 
   async handleConnection(client: Socket) {
     const token = client.handshake.auth?.token as string;
-    console.log(token)
     try {
       const payload: JwtEnterprise = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_ACCESS_SECRET_ENTERPRISE,
       });
-
       client.data.user = payload;
-
-      const logs = await this.logsService.findAll();
+      await client.join(payload.sub);
+      const logs = await this.logsService.findAll(payload.sub);
+      const logsForMinutes = await this.logsService.logsMin(payload.sub);
       client.emit('log_history', logs);
+      client.emit('log_for_minute_history', logsForMinutes);
     } catch (error) {
       console.error('❌ Erro no handleConnection:', error.message);
+
+      client.emit('error', 'Unauthorized');
+
+      client.disconnect();
     }
   }
 
@@ -63,7 +67,7 @@ export class LogsGateway implements OnGatewayConnection {
   }
 
   @OnEvent('log.created')
-  handleLogCreatedEvent(log: any) {
-    this.server.emit('new_log', log);
+  handleLogCreatedEvent(log: any, enterpriseId: string) {
+    this.server.to(enterpriseId).emit('new_log', log);
   }
 }
