@@ -7,5 +7,6 @@ import { JwtStrategyEnterprise } from './services/entrepise-auth.service';
 @Module({
   controllers: [EnterpriseController],
   providers: [EnterpriseService, EnterpriseRepository, JwtStrategyEnterprise],
+  exports: [EnterpriseService],
 })
 export class EnterpriseModule {}

@@ -3,13 +3,15 @@ import { CreateLogDto } from './dto/create-log.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { JwtEnterpriseGuard } from '../enterprise/jwt-enterprise.guard';
-import { LogsService } from './logs.service';
+import { MetricsService } from './services/metrics.service';
+import { LogsService } from './services/logs.service';
 
 @Controller('logs')
 export class LogsController {
   constructor(
     @InjectQueue('logs_queue') private logsQueue: Queue,
     private readonly logsService: LogsService,
+    private readonly metricsService: MetricsService,
   ) {}
 
   @Post()
@@ -19,10 +21,9 @@ export class LogsController {
     await this.logsQueue.add('process_log', createLog);
   }
 
-  // @Post('logsForMinute')
+  // @Post('testeMetrics')
   // @HttpCode(202)
-  // @UseGuards(JwtEnterpriseGuard)
-  // async teste(@) {
-  //   return await this.logsService.logsMin();
+  // async teste() {
+  //   return await this.metricsService.updateMetrics();
   // }
 }

@@ -1,8 +1,8 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { LogsService } from './logs.service';
 import { CreateLogDto } from './dto/create-log.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LogsService } from './services/logs.service';
 
 @Processor('logs_queue')
 export class LogsProcessor extends WorkerHost {

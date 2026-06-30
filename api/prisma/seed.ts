@@ -122,16 +122,12 @@ function generateLevel(): LogLevel {
 }
 
 function generateCreatedAt() {
-  const now = Date.now();
+  const now = new Date();
+  // Converte para UTC explicitamente
+  const nowUTC = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+  const twoAndHalfHoursAgo = nowUTC - 2.5 * 60 * 60 * 1000;
 
-  const twoAndHalfHoursAgo = now - 2.5 * 60 * 60 * 1000;
-
-  return new Date(
-    faker.number.int({
-      min: twoAndHalfHoursAgo,
-      max: now,
-    }),
-  );
+  return new Date(faker.number.int({ min: twoAndHalfHoursAgo, max: nowUTC }));
 }
 
 function generateMetadata(level: LogLevel) {
@@ -190,13 +186,13 @@ function generateMetadata(level: LogLevel) {
 async function main() {
   const TOTAL_LOGS = 100000;
 
-  console.log('Limpando logs antigos...');
+  // console.log('Limpando logs antigos...');
 
-  await prisma.logs.deleteMany({
-    where: {
-      enterpriseId: ENTERPRISE_ID,
-    },
-  });
+  // await prisma.logs.deleteMany({
+  //   where: {
+  //     enterpriseId: ENTERPRISE_ID,
+  //   },
+  // });
 
   console.log('Gerando logs...');
 

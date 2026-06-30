@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
-import { LogsService } from './logs.service';
 import { LogsController } from './logs.controller';
 import { LogsRepository } from './logs.repository';
 import { BullModule } from '@nestjs/bullmq';
 import { LogsProcessor } from './logs.processor';
-import { LogsGateway } from './logs.gateway';
+import { LogsGateway } from './gateway/logs.gateway';
 import { JwtStrategyEnterprise } from '../enterprise/services/entrepise-auth.service';
+import { MetricsService } from './services/metrics.service';
+import { LogsService } from './services/logs.service';
+import { EnterpriseModule } from '../enterprise/enterprise.module';
+import { MetricsEmitterService } from './gateway/metrics-emitter.service';
 
 @Module({
   imports: [
     BullModule.registerQueue({
       name: 'logs_queue',
     }),
+    EnterpriseModule,
   ],
   controllers: [LogsController],
   providers: [
@@ -20,6 +24,8 @@ import { JwtStrategyEnterprise } from '../enterprise/services/entrepise-auth.ser
     LogsRepository,
     LogsProcessor,
     JwtStrategyEnterprise,
+    MetricsService,
+    MetricsEmitterService,
   ],
 })
 export class LogsModule {}

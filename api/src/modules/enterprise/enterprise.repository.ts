@@ -17,6 +17,14 @@ export class EnterpriseRepository {
     }
   }
 
+  async findMany() {
+    try {
+      return await this.prismaService.enterprises.findMany();
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   async findEnterpriseByApiId(apiId: string) {
     try {
       return await this.prismaService.enterprises.findUnique({

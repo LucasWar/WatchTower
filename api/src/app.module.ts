@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EnterpriseModule } from './modules/enterprise/enterprise.module';
         port: 6379,
       },
     }),
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

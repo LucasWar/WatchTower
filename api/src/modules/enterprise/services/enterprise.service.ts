@@ -56,9 +56,9 @@ export class EnterpriseService {
     return { accessToken };
   }
 
-  // findAll() {
-  //   return `This action returns all enterprise`;
-  // }
+  findAll() {
+    return this.enterpriseRepo.findMany();
+  }
 
   // findOne(id: number) {
   //   return `This action returns a #${id} enterprise`;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateLogDto } from './dto/create-log.dto';
-import { LogsRepository } from './logs.repository';
+import { LogsRepository } from '../logs.repository';
+import { CreateLogDto } from '../dto/create-log.dto';
 
 @Injectable()
 export class LogsService {
@@ -15,7 +15,7 @@ export class LogsService {
   }
 
   async logsMin(currentEnterpriseId: string) {
-    const results = await this.logRepo.findLogsForMin(currentEnterpriseId);
+    const results = await this.logRepo.findLogs(currentEnterpriseId);
 
     if (!results?.length) {
       return {
@@ -27,7 +27,7 @@ export class LogsService {
 
     const logs = results.map((result) => ({
       ...result,
-      avg_duration: Number(result.avg_duration),
+      avg_duration: Number(result.avg_duration.toFixed(2)),
     }));
 
     const current = logs[0].avg_duration;

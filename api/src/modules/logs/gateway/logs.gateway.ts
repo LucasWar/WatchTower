@@ -7,14 +7,16 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { UsePipes, ValidationPipe } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
-import { CreateLogDto } from './dto/create-log.dto';
-import { LogsService } from './logs.service';
+import { Socket } from 'socket.io';
+import { CreateLogDto } from '../dto/create-log.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentEnterpriseId } from 'src/shared/decorators/current-enterprise.decorator';
+import { LogsService } from '../services/logs.service';
+import { Namespace } from 'socket.io';
+import { MetricsService } from '../services/metrics.service';
 
 interface JwtEnterprise {
   sub: string;
@@ -26,10 +28,11 @@ interface JwtEnterprise {
 })
 export class LogsGateway implements OnGatewayConnection {
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
 
   constructor(
     private logsService: LogsService,
+    private metricsService: MetricsService,
     private readonly jwtService: JwtService,
     @InjectQueue('logs_queue') private readonly logsQueue: Queue,
   ) {}
@@ -43,9 +46,10 @@ export class LogsGateway implements OnGatewayConnection {
       client.data.user = payload;
       await client.join(payload.sub);
       const logs = await this.logsService.findAll(payload.sub);
-      const logsForMinutes = await this.logsService.logsMin(payload.sub);
+      const metrics = await this.metricsService.updateMetrics(payload.sub);
+
       client.emit('log_history', logs);
-      client.emit('log_for_minute_history', logsForMinutes);
+      client.emit('metrics_updated', metrics);
     } catch (error) {
       console.error('❌ Erro no handleConnection:', error.message);
 
