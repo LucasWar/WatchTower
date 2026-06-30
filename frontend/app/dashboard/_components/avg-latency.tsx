@@ -2,6 +2,7 @@
 
 import GraphicArea from "@/app/_components/graphic-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FindAvgLatencyResponse } from "../types";
 
 const data = [
   { value: 10 },
@@ -18,7 +19,11 @@ const data = [
   { value: 36 },
 ];
 
-export default function AvgLantency() {
+interface AvgLantencyProps {
+  onLatencys?: FindAvgLatencyResponse[];
+}
+
+export default function AvgLantency({onLatencys}: AvgLantencyProps) {
   return(
     <Card className="max-h-45 bg-primary-color text-gray-300 sm:min-h-45">
       <CardHeader>
@@ -35,8 +40,8 @@ export default function AvgLantency() {
         </div>
         <div className="h-16 w-full mt-2">
           <GraphicArea 
-            dataKey="value"
-            data={data}
+            dataKey="p95_latency"
+            data={onLatencys ?? []}
             colorLine="#3CAE63"
             colortArea="#3CAE63"
             height={64}

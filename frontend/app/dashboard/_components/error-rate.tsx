@@ -2,6 +2,7 @@
 import GraphicArea from "@/app/_components/graphic-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useId } from "react";
+import { ErrorRateInterface } from "../types";
 
 const data = [
   { value: 10 },
@@ -18,7 +19,11 @@ const data = [
   { value: 36 },
 ];
 
-export default function ErrorRate() {
+interface ErrorRateProps {
+  onRate: ErrorRateInterface
+}
+
+export default function ErrorRate({onRate}: ErrorRateProps) {
   return(
     <Card className="max-h-45 bg-primary-color text-red-400/60 sm:min-h-45">
       <CardHeader className="text-gray-300">
@@ -26,9 +31,9 @@ export default function ErrorRate() {
       </CardHeader>
       <CardContent>
         <div className="flex gap-3">
-          <p className="text-3xl font-medium">1.8%</p>
+          <p className="text-3xl font-medium">{onRate.summary.current}%</p>
           <div className="text-sm text-green-400 mb-1">
-            -0.2%
+            {onRate.summary.variationPercent}%
             <br />
             <span className="text-slate-500">
               vs previous period
@@ -37,8 +42,8 @@ export default function ErrorRate() {
         </div>
         <div className="h-16 w-full mt-2">
           <GraphicArea 
-            data={data}
-            dataKey="value"
+            data={onRate.chart}
+            dataKey="error_rate"
             colorLine="#C91B00"
             colortArea="#C91B00"
             height={64}

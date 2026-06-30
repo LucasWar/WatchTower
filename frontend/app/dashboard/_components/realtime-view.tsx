@@ -1,23 +1,23 @@
 "use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, AreaChart, Area, Tooltip, CartesianGrid, XAxis, YAxis, Legend} from "recharts";
-export default function RealtimeView() {
-  const data = [
-    { time: "0m", logs: 150, errors: 20 },
-    { time: "1m", logs: 180, errors: 25 },
-    { time: "3m", logs: 200, errors: 30 },
-    { time: "5m", logs: 280, errors: 18 },
-    { time: "7m", logs: 240, errors: 22 },
-    { time: "8m", logs: 250, errors: 35 },
-    { time: "9m", logs: 290, errors: 28 },
-    { time: "10m", logs: 220, errors: 15 },
-    { time: "11m", logs: 320, errors: 38 },
-    { time: "12m", logs: 260, errors: 26 },
-    { time: "13m", logs: 350, errors: 32 },
-    { time: "14m", logs: 340, errors: 50 },
-    { time: "15m", logs: 240, errors: 24 },
-  ];
+import { CountErrorLogsTotalLogsResponse } from "../types";
+import { utcToUserHour } from "@/lib/utcToUserHour";
+
+interface RealtimeViewProps {
+  onTotalLogsAndErro: CountErrorLogsTotalLogsResponse[]
+}
+
+export default function RealtimeView({onTotalLogsAndErro}: RealtimeViewProps) {
+  let data;
+  if(onTotalLogsAndErro){
+    data = onTotalLogsAndErro.map((data) => {
+      return {
+        ...data,
+        bucket_time: utcToUserHour(data.bucket_time)
+      }
+    })
+  }
   return(
      <Card className="h-80 bg-primary-color text-gray-300 sm:min-h-45 lg:w-5/8">
       <CardHeader>
@@ -45,7 +45,7 @@ export default function RealtimeView() {
               />
 
               <XAxis
-                dataKey="time"
+                dataKey="bucket_time"
                 tick={{ fill: "#94a3b8", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
@@ -69,7 +69,7 @@ export default function RealtimeView() {
 
               <Area
                 type="monotone"
-                dataKey="logs"
+                dataKey="total_logs"
                 name="Log Volume"
                 stroke="#60a5fa"
                 strokeWidth={3}
@@ -82,7 +82,7 @@ export default function RealtimeView() {
 
               <Area
                 type="monotone"
-                dataKey="errors"
+                dataKey="error_logs"
                 name="Error Volume"
                 stroke="#ef4444"
                 strokeWidth={2}

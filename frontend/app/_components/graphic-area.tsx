@@ -1,19 +1,23 @@
-import { useId } from "react";
+import { useId, useMemo } from "react";
 import { ResponsiveContainer, AreaChart, Area, Tooltip} from "recharts";
+import { CustomTooltip } from "./content";
 
-interface GraphicAreaProps {
-  data: Record<string, number | string>[];
+interface GraphicAreaProps<T extends object> {
+  data: T[];
   dataKey: string;
   colorLine?: string;
   colortArea?: string;
   height: number;
 }
 
-export default function GraphicArea({data, colorLine, colortArea, dataKey, height}:GraphicAreaProps) {
-   const gradientId = useId();
+export default function GraphicArea<T extends object>({data, colorLine, colortArea, dataKey, height}:GraphicAreaProps<T>) {
+  const gradientId = useId();
+  const reversedData = useMemo(() => [...data].reverse(), [data]);
+
+
   return(
     <ResponsiveContainer width="100%" height={height} minWidth={1} minHeight={1}>
-      <AreaChart data={data}>
+      <AreaChart data={reversedData}>
         <defs>
           <linearGradient
             id={gradientId}
@@ -42,7 +46,8 @@ export default function GraphicArea({data, colorLine, colortArea, dataKey, heigh
           strokeWidth={2}
           fill={`url(#${gradientId})`}
         />
-        <Tooltip/>
+        
+      <Tooltip content={CustomTooltip} />
       </AreaChart>
     </ResponsiveContainer>
   )

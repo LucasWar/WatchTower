@@ -3,12 +3,27 @@
 import { ConnectSocket } from "@/lib/socket";
 import { useGetToken } from "@/services/enterprise/get-token";
 import { useEffect, useState } from "react";
-import { LogHistoryForMinute } from "./types";
+import { Metrics } from "./types";
 
 export function useDashboardSocket() {
   const [token, setToken] = useState<string | null>(null);
 
-  const [logsForMinute, setLogsForMinute] = useState<LogHistoryForMinute>();
+  const [metrics, setMetrics] = useState<Metrics>({
+    errorRate: {
+      chart: [],
+      summary: {
+        current: 0,
+        variationPercent: 0,
+        variationPoints: 0,
+      }
+    },
+    logsForMin: {
+      current: 0,
+      variation: 0,
+      logs: []
+    },
+    latency: []
+  });
 
   const mutation = useGetToken();
 
@@ -29,18 +44,15 @@ export function useDashboardSocket() {
       console.log(err.message);
     });
 
-    //socket.on("log_history", console.log);
-    socket.on("log_for_minute_history", (data) => {
-      setLogsForMinute(data)
+    socket.on("metrics_updated", (data) => {
+      setMetrics(data)
     });
-    //socket.on("new_log", console.log);
-
 
     return () => socket.disconnect();
   }, [token]);
 
 
   return {
-    logsForMinute
+    metrics
   }
 }

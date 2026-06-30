@@ -1,15 +1,21 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { FindCountLevelResponse } from "../types";
 
-export default function TopFiveServices() {
+interface TopFiveServicesProps {
+  onLevelRecords: FindCountLevelResponse[]
+}
+
+
+export default function TopFiveServices({onLevelRecords}: TopFiveServicesProps) {
 
   const data = [
-    { service: "erp-api", value: 180 },
-    { service: "auth-worker", value: 100 },
-    { service: "payments", value: 70 },
-    { service: "core-db", value: 35 },
-    { service: "notifier", value: 15 },
+    { service: "DEBUG", value: 180 },
+    { service: "INFO", value: 100 },
+    { service: "WARN", value: 70 },
+    { service: "ERROR", value: 35 },
+    { service: "FATAL", value: 15 },
   ];
 
   return(
@@ -20,7 +26,7 @@ export default function TopFiveServices() {
       <CardContent className="flex items-center h-full text-4xl text-scarlet/70">
         <ResponsiveContainer width="100%" height="85%">
           <BarChart
-            data={data}
+            data={onLevelRecords}
             layout="vertical"
             margin={{
               top: 0,
@@ -45,7 +51,7 @@ export default function TopFiveServices() {
 
             <YAxis
               type="category"
-              dataKey="service"
+              dataKey="level"
               tick={{ fill: "#e2e8f0", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
@@ -53,7 +59,7 @@ export default function TopFiveServices() {
             />
 
             <Bar
-              dataKey="value"
+              dataKey="count"
               radius={[0, 6, 6, 0]}
               barSize={10}
               fill="#7fb0e6"
