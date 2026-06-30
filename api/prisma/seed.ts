@@ -122,12 +122,18 @@ function generateLevel(): LogLevel {
 }
 
 function generateCreatedAt() {
-  const now = new Date();
-  // Converte para UTC explicitamente
-  const nowUTC = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
-  const twoAndHalfHoursAgo = nowUTC - 2.5 * 60 * 60 * 1000;
+  // const now = new Date();
+  // // Converte para UTC explicitamente
+  // const nowUTC = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+  // const twoAndHalfHoursAgo = nowUTC - 2.5 * 60 * 60 * 1000;
 
-  return new Date(faker.number.int({ min: twoAndHalfHoursAgo, max: nowUTC }));
+  const now = new Date();
+
+  const twoAndHalfHoursAgo = new Date(now.getTime() - 2.5 * 60 * 60 * 1000);
+
+  return new Date(
+    faker.number.int({ min: twoAndHalfHoursAgo.getTime(), max: now.getTime() }),
+  );
 }
 
 function generateMetadata(level: LogLevel) {
@@ -186,13 +192,13 @@ function generateMetadata(level: LogLevel) {
 async function main() {
   const TOTAL_LOGS = 100000;
 
-  // console.log('Limpando logs antigos...');
+  console.log('Limpando logs antigos...');
 
-  // await prisma.logs.deleteMany({
-  //   where: {
-  //     enterpriseId: ENTERPRISE_ID,
-  //   },
-  // });
+  await prisma.logs.deleteMany({
+    where: {
+      enterpriseId: ENTERPRISE_ID,
+    },
+  });
 
   console.log('Gerando logs...');
 
@@ -233,7 +239,7 @@ async function main() {
     },
   );
 
-  const batchSize = 5000;
+  const batchSize = 100;
 
   for (let i = 0; i < logs.length; i += batchSize) {
     const batch = logs.slice(i, i + batchSize);

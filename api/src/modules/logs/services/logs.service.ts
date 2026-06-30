@@ -27,7 +27,7 @@ export class LogsService {
 
     const logs = results.map((result) => ({
       ...result,
-      avg_duration: Number(result.avg_duration.toFixed(2)),
+      avg_duration: Number(result.total_logs.toFixed(2)),
     }));
 
     const current = logs[0].avg_duration;

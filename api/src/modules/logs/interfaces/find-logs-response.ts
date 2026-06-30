@@ -1,4 +1,4 @@
 export type FindLogsForMinResponse = {
   bucket: string;
-  avg_duration: number;
+  total_logs: number;
 };

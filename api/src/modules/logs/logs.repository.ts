@@ -46,19 +46,19 @@ export class LogsRepository {
   ): Promise<FindLogsForMinResponse[] | undefined> {
     try {
       return await this.prismaService.$queryRaw`
-        SELECT 
+        SELECT
           date_trunc('minute', created_at)
             - (EXTRACT(MINUTE FROM created_at)::int % 15) * INTERVAL '1 minute'
             AS bucket,
 
-          AVG((metadata->>'duration')::int) AS avg_duration
+          COUNT(*) AS total_logs
 
         FROM logs
         WHERE created_at >= NOW() - INTERVAL '150 minutes'
-          AND metadata ? 'duration'
           AND enterprise_id = ${enterpriseId}
+
         GROUP BY bucket
-        ORDER BY bucket DESC
+        ORDER BY bucket DESC;
       `;
     } catch (error) {
       console.log(error);

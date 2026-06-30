@@ -10,24 +10,7 @@ export class MetricsService {
     const errorRate = await this.errorRate(enterpriseId);
     const latency = await this.latency(enterpriseId);
     const countLevel = await this.countLevelRecords(enterpriseId);
-    const results = await this.logRepo.countLogs(enterpriseId);
-
-    if (!results?.length) {
-      return {
-        chart: [],
-        summary: {
-          current: 0,
-          variationPercent: 0,
-          variationPoints: 0,
-        },
-      };
-    }
-
-    const totalLogsAndErro = results.map((result) => ({
-      ...result,
-      total_logs: Number(result.total_logs),
-      error_logs: Number(result.error_logs),
-    }));
+    const totalLogsAndErro = await this.overviewLogs(enterpriseId);
 
     return {
       logsForMin,
@@ -49,19 +32,14 @@ export class MetricsService {
       };
     }
 
-    const logs = results.map((result) => ({
-      ...result,
-      avg_duration: Number(result.avg_duration.toFixed(2)),
-    }));
-
-    const current = logs[0].avg_duration;
+    const current = Number(results[0].total_logs);
 
     let variation = 0;
 
-    if (logs.length > 1) {
+    if (results.length > 1) {
       const historicalAverage =
-        logs.slice(1).reduce((acc, log) => acc + log.avg_duration, 0) /
-        (logs.length - 1);
+        results.slice(1).reduce((acc, log) => acc + Number(log.total_logs), 0) /
+        (results.length - 1);
 
       variation =
         historicalAverage === 0
@@ -69,10 +47,17 @@ export class MetricsService {
           : ((current - historicalAverage) / historicalAverage) * 100;
     }
 
+    const logs = results.map((result) => {
+      return {
+        ...result,
+        total_logs: Number(result.total_logs),
+      };
+    });
+
     return {
       current,
       variation: Number(variation.toFixed(2)),
-      logs,
+      logs: logs,
     };
   }
 
@@ -126,14 +111,7 @@ export class MetricsService {
     const results = await this.logRepo.findAvgLatency(currentEnterpriseId);
 
     if (!results?.length) {
-      return {
-        chart: [],
-        summary: {
-          current: 0,
-          variationPercent: 0,
-          variationPoints: 0,
-        },
-      };
+      return [];
     }
 
     const latencys = results.map((result) => ({
@@ -148,11 +126,7 @@ export class MetricsService {
     const results = await this.logRepo.findCountLevel(enterpriseId);
 
     if (!results?.length) {
-      return {
-        current: 0,
-        variation: 0,
-        logs: [],
-      };
+      return [];
     }
 
     const countLevel = results.map((result) => ({
@@ -163,25 +137,19 @@ export class MetricsService {
     return countLevel;
   }
 
-  // async overviewLogs(currentEnterpriseId: string) {
-  //   const results = await this.logRepo.findLogs(currentEnterpriseId);
+  async overviewLogs(enterpriseId: string) {
+    const results = await this.logRepo.countLogs(enterpriseId);
 
-  //   if (!results?.length) {
-  //     return {
-  //       current: 0,
-  //       variation: 0,
-  //       logs: [],
-  //     };
-  //   }
+    if (!results?.length) {
+      return [];
+    }
 
-  //   const logs = results.map((result) => ({
-  //     ...result,
-  //     avg_duration: Number(result.avg_duration.toFixed(2)),
-  //   }));
+    const totalLogsAndErro = results.map((result) => ({
+      ...result,
+      total_logs: Number(result.total_logs),
+      error_logs: Number(result.error_logs),
+    }));
 
-  
-  //   return {
-  //     logs,
-  //   };
-  // }
+    return totalLogsAndErro;
+  }
 }
