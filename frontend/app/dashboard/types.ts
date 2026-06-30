@@ -18,7 +18,7 @@ export interface LogHistoryForMinute {
   variation: number;
   logs: {
       bucket: string;
-      avg_duration: number;
+      total_logs: number;
     }[];
 }
 

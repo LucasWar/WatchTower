@@ -24,6 +24,7 @@ interface LargeMinProps {
 }
 
 export default function LargeMin({onLogs}:LargeMinProps) {
+
   return(
     <Card className="max-h-45 bg-primary-color text-gray-300 sm:min-h-45">
       <CardHeader>
@@ -43,7 +44,7 @@ export default function LargeMin({onLogs}:LargeMinProps) {
         <div className="h-16">
           <GraphicArea 
             data={onLogs.logs}
-            dataKey="avg_duration"
+            dataKey="total_logs"
             height={64}
           />
         </div>

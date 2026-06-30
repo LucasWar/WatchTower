@@ -10,7 +10,6 @@ import { useDashboardSocket } from "./dashboard-controller";
 
 export default function Dashboard() {
   const {metrics} = useDashboardSocket();
-  console.log(metrics.totalLogsAndErro)
   return (
     <div className="flex flex-col min-h-screen mx-5 mt-10 gap-7">
       <span className="mb-5 text-3xl font-medium text-white">Dashboard overview</span>

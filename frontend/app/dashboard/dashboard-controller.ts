@@ -9,6 +9,11 @@ export function useDashboardSocket() {
   const [token, setToken] = useState<string | null>(null);
 
   const [metrics, setMetrics] = useState<Metrics>({
+    logsForMin: {
+      current: 0,
+      variation: 0,
+      logs: []
+    },
     errorRate: {
       chart: [],
       summary: {
@@ -17,12 +22,9 @@ export function useDashboardSocket() {
         variationPoints: 0,
       }
     },
-    logsForMin: {
-      current: 0,
-      variation: 0,
-      logs: []
-    },
-    latency: []
+    latency: [],
+    countLevel: [],
+    totalLogsAndErro: [],
   });
 
   const mutation = useGetToken();
