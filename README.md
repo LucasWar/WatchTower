@@ -4,9 +4,33 @@ Plataforma de observabilidade Full Stack para centralização de logs, monitoram
 
 ---
 
-## 📸 Visão Geral do Sistema
+## 📸 Visão Geral do Sistema (Em desenvolvimento)
 
-> _Screenshots serão adicionados em breve._
+> ## Dashboard em tempo real.
+
+Painel principal com resumo de logs por minuto, latência média e logs cadastrados.
+
+* Visão geral da situação do sistema.
+* Atualizações em tempo real.
+
+<p align="center">
+  <img src="img/dashboard.png" alt="Dashboard do TeamBoard" width="800"/>
+</p>
+
+> ## Logs.
+
+Painel voltado para verificar detalhes de cada log registrado.
+
+* Listagem de todos os logs.
+* Vizualização mais detalhada de cada log.
+
+<p align="center">
+  <img src="img/log1.png" alt="Dashboard do TeamBoard" width="800"/>
+</p>
+
+<p align="center">
+  <img src="img/log2.png" alt="Dashboard do TeamBoard" width="800"/>
+</p>
 
 ---
 
