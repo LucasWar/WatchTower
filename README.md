@@ -14,7 +14,7 @@ Painel principal com resumo de logs por minuto, latência média e logs cadastra
 * Atualizações em tempo real.
 
 <p align="center">
-  <img src="img/dashboard.png" alt="Dashboard do TeamBoard" width="800"/>
+  <img src="imgs/dashboard.png" alt="Dashboard do WatchTower" width="800"/>
 </p>
 
 > ## Logs.
@@ -25,11 +25,11 @@ Painel voltado para verificar detalhes de cada log registrado.
 * Vizualização mais detalhada de cada log.
 
 <p align="center">
-  <img src="img/log1.png" alt="Dashboard do TeamBoard" width="800"/>
+  <img src="imgs/log1.png" alt="Página de logs do WatchTower" width="800"/>
 </p>
 
 <p align="center">
-  <img src="img/log2.png" alt="Dashboard do TeamBoard" width="800"/>
+  <img src="imgs/log2.png" alt="Página de logs do WatchTower" width="800"/>
 </p>
 
 ---
