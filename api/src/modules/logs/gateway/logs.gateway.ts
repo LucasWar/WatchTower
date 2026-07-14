@@ -6,7 +6,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { CreateLogDto } from '../dto/create-log.dto';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -14,12 +14,16 @@ import { Queue } from 'bullmq';
 import { OnEvent } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { CurrentEnterpriseId } from 'src/shared/decorators/current-enterprise.decorator';
-import { LogsService } from '../services/logs.service';
 import { Namespace } from 'socket.io';
 import { MetricsService } from '../services/metrics.service';
+import { WsAuthGuard } from 'src/shared/guards/teste.guard';
 
-interface JwtEnterprise {
+interface JwtAuth {
   sub: string;
+  email: string;
+  enterpriseId: string;
+  iat: number;
+  exp: number;
 }
 
 @WebSocketGateway({
@@ -31,7 +35,6 @@ export class LogsGateway implements OnGatewayConnection {
   server: Namespace;
 
   constructor(
-    private logsService: LogsService,
     private metricsService: MetricsService,
     private readonly jwtService: JwtService,
     @InjectQueue('logs_queue') private readonly logsQueue: Queue,
@@ -40,15 +43,16 @@ export class LogsGateway implements OnGatewayConnection {
   async handleConnection(client: Socket) {
     const token = client.handshake.auth?.token as string;
     try {
-      const payload: JwtEnterprise = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_ACCESS_SECRET_ENTERPRISE,
+      const payload: JwtAuth = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_ACCESS_SECRET,
       });
       client.data.user = payload;
-      await client.join(payload.sub);
-      const logs = await this.logsService.findAll(payload.sub);
-      const metrics = await this.metricsService.updateMetrics(payload.sub);
-
-      client.emit('log_history', logs);
+      await client.join(payload.enterpriseId);
+      const timeRange = '150 minutes';
+      const metrics = await this.metricsService.updateMetrics(
+        payload.enterpriseId,
+        timeRange,
+      );
       client.emit('metrics_updated', metrics);
     } catch (error) {
       console.error('❌ Erro no handleConnection:', error.message);
@@ -57,6 +61,21 @@ export class LogsGateway implements OnGatewayConnection {
 
       client.disconnect();
     }
+  }
+
+  @SubscribeMessage('change_period')
+  async changePeriod(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() body: { period: string },
+  ) {
+    client.data.period = body.period;
+
+    const metrics = await this.metricsService.updateMetrics(
+      client.data.user.enterpriseId as string,
+      body.period,
+    );
+
+    client.emit('metrics_updated', metrics);
   }
 
   @SubscribeMessage('create_log')

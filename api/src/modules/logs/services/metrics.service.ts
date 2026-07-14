@@ -5,12 +5,12 @@ import { LogsRepository } from '../logs.repository';
 export class MetricsService {
   constructor(private readonly logRepo: LogsRepository) {}
 
-  async updateMetrics(enterpriseId: string) {
-    const logsForMin = await this.logsMin(enterpriseId);
-    const errorRate = await this.errorRate(enterpriseId);
-    const latency = await this.latency(enterpriseId);
+  async updateMetrics(enterpriseId: string, rangeTime: string) {
+    const logsForMin = await this.logsMin(enterpriseId, rangeTime);
+    const errorRate = await this.errorRate(enterpriseId, rangeTime);
+    const latency = await this.latency(enterpriseId, rangeTime);
     const countLevel = await this.countLevelRecords(enterpriseId);
-    const totalLogsAndErro = await this.overviewLogs(enterpriseId);
+    const totalLogsAndErro = await this.overviewLogs(enterpriseId, rangeTime);
 
     return {
       logsForMin,
@@ -21,8 +21,8 @@ export class MetricsService {
     };
   }
 
-  async logsMin(currentEnterpriseId: string) {
-    const results = await this.logRepo.findLogs(currentEnterpriseId);
+  async logsMin(currentEnterpriseId: string, rangeTime: string) {
+    const results = await this.logRepo.findLogs(currentEnterpriseId, rangeTime);
 
     if (!results?.length) {
       return {
@@ -61,8 +61,11 @@ export class MetricsService {
     };
   }
 
-  async errorRate(currentEnterpriseId: string) {
-    const results = await this.logRepo.errorRate(currentEnterpriseId);
+  async errorRate(currentEnterpriseId: string, rangeTime: string) {
+    const results = await this.logRepo.errorRate(
+      currentEnterpriseId,
+      rangeTime,
+    );
 
     if (!results?.length) {
       return {
@@ -107,8 +110,11 @@ export class MetricsService {
     };
   }
 
-  async latency(currentEnterpriseId: string) {
-    const results = await this.logRepo.findAvgLatency(currentEnterpriseId);
+  async latency(currentEnterpriseId: string, rangeTime: string) {
+    const results = await this.logRepo.findAvgLatency(
+      currentEnterpriseId,
+      rangeTime,
+    );
 
     if (!results?.length) {
       return [];
@@ -122,8 +128,8 @@ export class MetricsService {
     return latencys;
   }
 
-  async countLevelRecords(enterpriseId: string) {
-    const results = await this.logRepo.findCountLevel(enterpriseId);
+  async countLevelRecords(currentEnterpriseId: string) {
+    const results = await this.logRepo.findCountLevel(currentEnterpriseId);
 
     if (!results?.length) {
       return [];
@@ -137,8 +143,8 @@ export class MetricsService {
     return countLevel;
   }
 
-  async overviewLogs(enterpriseId: string) {
-    const results = await this.logRepo.countLogs(enterpriseId);
+  async overviewLogs(currentEnterpriseId: string, rangeTime: string) {
+    const results = await this.logRepo.countLogs(currentEnterpriseId, rangeTime);
 
     if (!results?.length) {
       return [];

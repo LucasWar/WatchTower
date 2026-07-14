@@ -29,10 +29,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private async generateTokens(userId: string, email: string) {
+  private async generateTokens(
+    userId: string,
+    email: string,
+    enterpriseId: string,
+  ) {
     const jti = randomUUID();
     const accessToken = await this.jwtService.signAsync(
-      { sub: userId, email },
+      { sub: userId, email, enterpriseId },
       {
         secret: process.env.JWT_ACCESS_SECRET,
         expiresIn: '15min',
@@ -68,6 +72,7 @@ export class AuthService {
     const { accessToken, refreshToken, jti } = await this.generateTokens(
       user.id,
       email,
+      user.enterpriseId,
     );
 
     await this.authRepo.createRefreshToken(jti, user.id);
@@ -135,7 +140,7 @@ export class AuthService {
       accessToken,
       jti: newJti,
       refreshToken,
-    } = await this.generateTokens(user.id, user.email);
+    } = await this.generateTokens(user.id, user.email, user.enterpriseId);
 
     await this.authRepo.updateRefreshToken(validRefreshToken.jti, newJti);
 

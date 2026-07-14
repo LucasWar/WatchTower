@@ -10,6 +10,9 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServicesModule } from './modules/services/services.module';
+import { RedisModule } from './modules/redis/redis.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { ScheduleModule } from '@nestjs/schedule';
       secret: process.env.JWT_SECRET,
     }),
     EnterpriseModule,
+    ServicesModule,
+    RedisModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,6 +9,8 @@ import { MetricsService } from './services/metrics.service';
 import { LogsService } from './services/logs.service';
 import { EnterpriseModule } from '../enterprise/enterprise.module';
 import { MetricsEmitterService } from './gateway/metrics-emitter.service';
+import { RedisModule } from '../redis/redis.module';
+import { ServicesModule } from '../services/services.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { MetricsEmitterService } from './gateway/metrics-emitter.service';
       name: 'logs_queue',
     }),
     EnterpriseModule,
+    RedisModule,
+    ServicesModule,
   ],
   controllers: [LogsController],
   providers: [

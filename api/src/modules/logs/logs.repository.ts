@@ -12,15 +12,38 @@ import { CountErrorLogsTotalLogsResponse } from './interfaces/count-error-logs.i
 export class LogsRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async create(createDto: CreateLogDto, enterpriseId: string) {
+  private convertRangeTimeForSql(rangeTime: string) {
+    const match = rangeTime.match(
+      /^(\d+)\s+(minute|minutes|hour|hours|day|days)$/,
+    );
+
+    if (!match) {
+      throw new Error('Invalid range time format');
+    }
+
+    const interval = Prisma.raw(`'${match[1]} ${match[2]}'`);
+
+    return interval;
+  }
+
+  async create(
+    createDto: CreateLogDto,
+    enterpriseId: string,
+    serviceId: string,
+  ) {
+    const { service, ...dto } = createDto;
     try {
       const data: Prisma.LogsCreateInput = {
-        ...createDto,
-        metadata:
-          createDto.metadata === null ? Prisma.JsonNull : createDto.metadata,
+        ...dto,
+        metadata: dto.metadata === null ? Prisma.JsonNull : dto.metadata,
         enterprise: {
           connect: {
             id: enterpriseId,
+          },
+        },
+        service: {
+          connect: {
+            id: serviceId,
           },
         },
       };
@@ -33,17 +56,51 @@ export class LogsRepository {
     }
   }
 
-  async findAll(enterpriseId: string) {
-    return await this.prismaService.logs.findMany({
-      where: {
-        id: enterpriseId,
+  async count(
+    where: Prisma.LogsWhereInput | undefined,
+  ): Promise<number | undefined> {
+    try {
+      return await this.prismaService.logs.count({
+        where: {
+          ...where,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async findAll(query: Prisma.LogsFindManyArgs) {
+    const data = await this.prismaService.logs.findMany({
+      ...query,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        service: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
+
+    const response = data.map((record) => {
+      return {
+        ...record,
+        service: record.service.name,
+      };
+    });
+
+    return response;
   }
 
   async findLogs(
     enterpriseId: string,
+    rangeTime: string,
   ): Promise<FindLogsForMinResponse[] | undefined> {
+    const interval = this.convertRangeTimeForSql(rangeTime);
+
     try {
       return await this.prismaService.$queryRaw`
         SELECT
@@ -54,7 +111,7 @@ export class LogsRepository {
           COUNT(*) AS total_logs
 
         FROM logs
-        WHERE created_at >= NOW() - INTERVAL '150 minutes'
+        WHERE created_at >= NOW() - INTERVAL ${interval}
           AND enterprise_id = ${enterpriseId}
 
         GROUP BY bucket
@@ -67,7 +124,9 @@ export class LogsRepository {
 
   async countLogs(
     enterpriseId: string,
+    rangeTime: string,
   ): Promise<CountErrorLogsTotalLogsResponse[] | undefined> {
+    const interval = this.convertRangeTimeForSql(rangeTime);
     try {
       return await this.prismaService.$queryRaw`
         SELECT
@@ -77,7 +136,7 @@ export class LogsRepository {
           COUNT(*) AS total_logs,
           COUNT(*) FILTER (WHERE level = 'ERROR') AS error_logs
         FROM logs
-        WHERE created_at >= NOW() - INTERVAL '150 minutes'
+        WHERE created_at >= NOW() - INTERVAL ${interval}
           AND enterprise_id = ${enterpriseId}
         GROUP BY 1
         ORDER BY 1
@@ -89,7 +148,9 @@ export class LogsRepository {
 
   async findAvgLatency(
     enterpriseId: string,
+    rangeTime: string,
   ): Promise<FindAvgLatencyResponse[] | undefined> {
+    const interval = this.convertRangeTimeForSql(rangeTime);
     try {
       return await this.prismaService.$queryRaw`
         SELECT
@@ -105,7 +166,7 @@ export class LogsRepository {
         FROM logs
 
         WHERE
-          created_at >= NOW() - INTERVAL '150 minutes'
+          created_at >= NOW() - INTERVAL ${interval}
           AND enterprise_id = ${enterpriseId}
           AND metadata ? 'duration'
 
@@ -138,7 +199,11 @@ export class LogsRepository {
     }
   }
 
-  async errorRate(enterpriseId: string): Promise<ErrorRateResponse[]> {
+  async errorRate(
+    enterpriseId: string,
+    rangeTime: string,
+  ): Promise<ErrorRateResponse[]> {
+    const interval = this.convertRangeTimeForSql(rangeTime);
     return await this.prismaService.$queryRaw`
       SELECT
         date_trunc('minute', created_at)
@@ -163,7 +228,7 @@ export class LogsRepository {
       FROM logs
 
       WHERE
-        created_at >= NOW() - INTERVAL '150 minutes'
+        created_at >= NOW() - INTERVAL ${interval}
         AND enterprise_id = ${enterpriseId}
       GROUP BY bucket
       ORDER BY bucket DESC

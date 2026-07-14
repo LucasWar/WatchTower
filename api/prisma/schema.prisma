@@ -22,6 +22,7 @@ model Enterprises {
 
   cnpj            String    @unique
 
+  services        Services[]
   logs            Logs[]
   users           Users[]
   @@map("enterprise")
@@ -52,10 +53,14 @@ model RefreshToken {
 }
 
 model Logs {
-  id                String @id @default(uuid()) @db.Uuid
+  id                String  @id @default(uuid()) @db.Uuid
 
-  service           String
+  serviceId         String  @db.Uuid
+  
+  service           Services @relation(fields: [serviceId], references: [id])
+
   module            String
+
   action            String
 
   level             LogLevel
@@ -75,11 +80,32 @@ model Logs {
 
   createdAt         DateTime @default(now()) @map("created_at")
 
-  @@index([service])
   @@index([module])
   @@index([action])
   @@index([level])
   @@index([traceId])
 
   @@map("logs")
+}
+
+model Services {
+  id           String @id @default(uuid()) @db.Uuid
+
+  name         String
+
+  enterpriseId String @db.Uuid
+  enterprise   Enterprises @relation(fields: [enterpriseId], references: [id])
+
+  displayName  String?
+
+  description  String?
+
+  logs Logs[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([enterpriseId, name])
+  @@index([name])
+
+  @@map("service")
 }

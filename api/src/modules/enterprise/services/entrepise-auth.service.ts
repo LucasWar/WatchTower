@@ -23,6 +23,6 @@ export class JwtStrategyEnterprise extends PassportStrategy(
   }
 
   validate(payload: JwtPayload) {
-    return { apiId: payload.sub };
+    return { enterpriseId: payload.sub };
   }
 }

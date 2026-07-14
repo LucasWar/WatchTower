@@ -18,7 +18,10 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors('*');
+  app.enableCors({
+    origin: 'http://localhost:3000', // seu frontend
+    credentials: true,
+  });
 
   app.useWebSocketAdapter(new IoAdapter(app));
 

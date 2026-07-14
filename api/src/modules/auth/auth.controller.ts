@@ -8,11 +8,11 @@ import type { Response, Request } from 'express';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  private setRefreshToken(response: Response, refreshToken: string){
+  private setRefreshToken(response: Response, refreshToken: string) {
     response.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24,
     });
   }
@@ -50,5 +50,11 @@ export class AuthController {
     this.setRefreshToken(response, refreshToken);
 
     return { accessToken };
+  }
+
+  @Post('logout')
+  logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    res.clearCookie('refresh_token');
+    return { message: 'Logout realizado com sucesso' };
   }
 }

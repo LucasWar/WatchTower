@@ -15,22 +15,24 @@ export class MetricsEmitterService {
   @Interval(15000)
   async updateMetrics() {
     try {
-      const rooms = this.logsGateway.server.adapter.rooms;
-      const sids = this.logsGateway.server.adapter.sids;
+      const sockets = this.logsGateway.server.sockets;
 
-      for (const roomId of rooms.keys()) {
-        if (sids.has(roomId)) {
-          continue;
-        }
+      for (const socket of sockets.values()) {
+        const enterpriseId = socket.data.user?.enterpriseId;
 
-        console.log('Enterprise:', roomId);
+        if (!enterpriseId) continue;
 
-        const metrics = await this.metricsService.updateMetrics(roomId);
+        const period = socket.data.period ?? '150 minutes';
 
-        this.logsGateway.server.to(roomId).emit('metrics_updated', metrics);
+        const metrics = await this.metricsService.updateMetrics(
+          enterpriseId,
+          period,
+        );
+
+        socket.emit('metrics_updated', metrics);
       }
     } catch (error) {
-      console.log(`Erro emmiter metrics: ${error}`);
+      console.log(`Erro emitter metrics: ${error}`);
     }
   }
 }

@@ -16,6 +16,9 @@ const prisma = new PrismaClient({
 
 const ENTERPRISE_ID = 'b080494b-2f83-4ffb-8745-d9ac33dd848a';
 
+const TOTAL_LOGS = 100_000;
+const BATCH_SIZE = 1000;
+
 const SERVICES = [
   'auth-service',
   'payment-service',
@@ -122,17 +125,15 @@ function generateLevel(): LogLevel {
 }
 
 function generateCreatedAt() {
-  // const now = new Date();
-  // // Converte para UTC explicitamente
-  // const nowUTC = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
-  // const twoAndHalfHoursAgo = nowUTC - 2.5 * 60 * 60 * 1000;
-
   const now = new Date();
 
   const twoAndHalfHoursAgo = new Date(now.getTime() - 2.5 * 60 * 60 * 1000);
 
   return new Date(
-    faker.number.int({ min: twoAndHalfHoursAgo.getTime(), max: now.getTime() }),
+    faker.number.int({
+      min: twoAndHalfHoursAgo.getTime(),
+      max: now.getTime(),
+    }),
   );
 }
 
@@ -186,13 +187,12 @@ function generateMetadata(level: LogLevel) {
       stack: faker.lorem.lines(3),
     };
   }
+
   return metadata;
 }
 
 async function main() {
-  const TOTAL_LOGS = 100000;
-
-  console.log('Limpando logs antigos...');
+  console.log('Limpando logs...');
 
   await prisma.logs.deleteMany({
     where: {
@@ -200,60 +200,90 @@ async function main() {
     },
   });
 
-  console.log('Gerando logs...');
+  console.log('Limpando services...');
 
-  const logs = Array.from(
-    {
-      length: TOTAL_LOGS,
+  await prisma.services.deleteMany({
+    where: {
+      enterpriseId: ENTERPRISE_ID,
     },
-    () => {
-      const level = generateLevel();
+  });
 
-      return {
-        service: faker.helpers.arrayElement(SERVICES),
+  console.log('Criando services...');
 
-        module: faker.helpers.arrayElement(MODULES),
+  const createdServices = await Promise.all(
+    SERVICES.map((service) =>
+      prisma.services.create({
+        data: {
+          name: service,
 
-        action: faker.helpers.arrayElement(ACTIONS),
+          displayName: service
+            .replaceAll('-', ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
 
-        level,
+          description: `Serviço ${service}`,
 
-        message: faker.helpers.arrayElement(MESSAGES),
-
-        traceId: faker.string.uuid(),
-
-        externalUserId: faker.datatype.boolean() ? faker.string.uuid() : null,
-
-        environment: faker.helpers.arrayElement([
-          'production',
-          'staging',
-          'development',
-        ]),
-
-        metadata: generateMetadata(level),
-
-        enterpriseId: ENTERPRISE_ID,
-
-        createdAt: generateCreatedAt(),
-      };
-    },
+          enterpriseId: ENTERPRISE_ID,
+        },
+      }),
+    ),
   );
 
-  const batchSize = 100;
+  const servicesMap = new Map(
+    createdServices.map((service) => [service.name, service.id]),
+  );
 
-  for (let i = 0; i < logs.length; i += batchSize) {
-    const batch = logs.slice(i, i + batchSize);
+  console.log('Gerando logs...');
+
+  for (let inserted = 0; inserted < TOTAL_LOGS; inserted += BATCH_SIZE) {
+    const batch = Array.from(
+      {
+        length: Math.min(BATCH_SIZE, TOTAL_LOGS - inserted),
+      },
+      () => {
+        const level = generateLevel();
+
+        const serviceName = faker.helpers.arrayElement(SERVICES);
+
+        return {
+          serviceId: servicesMap.get(serviceName)!,
+
+          module: faker.helpers.arrayElement(MODULES),
+
+          action: faker.helpers.arrayElement(ACTIONS),
+
+          level,
+
+          message: faker.helpers.arrayElement(MESSAGES),
+
+          traceId: faker.string.uuid(),
+
+          externalUserId: faker.datatype.boolean() ? faker.string.uuid() : null,
+
+          environment: faker.helpers.arrayElement([
+            'production',
+            'staging',
+            'development',
+          ]),
+
+          metadata: generateMetadata(level),
+
+          enterpriseId: ENTERPRISE_ID,
+
+          createdAt: generateCreatedAt(),
+        };
+      },
+    );
 
     await prisma.logs.createMany({
       data: batch,
     });
 
     console.log(
-      `Inseridos ${Math.min(i + batchSize, logs.length)}/${logs.length}`,
+      `Inseridos ${Math.min(inserted + BATCH_SIZE, TOTAL_LOGS)}/${TOTAL_LOGS}`,
     );
   }
 
-  console.log('Seed finalizado com sucesso!');
+  console.log('✅ Seed finalizado com sucesso!');
 }
 
 main()
