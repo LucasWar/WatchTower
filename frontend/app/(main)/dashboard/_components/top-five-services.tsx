@@ -21,7 +21,7 @@ export default function TopFiveServices({onLevelRecords}: TopFiveServicesProps) 
   return(
     <Card className="max-h-80 bg-primary-color text-gray-300 sm:min-h-45 lg:w-3/8">
       <CardHeader>
-        <CardTitle>Triggered Alerts </CardTitle>
+        <CardTitle>Logs Level </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center h-full text-4xl text-scarlet/70">
         <ResponsiveContainer width="100%" height="85%">

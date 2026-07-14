@@ -3,22 +3,6 @@ import GraphicArea from "@/app/_components/graphic-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogHistoryForMinute } from "../types";
 
-
-const data = [
-  { value: 20 },
-  { value: 18 },
-  { value: 15 },
-  { value: 22 },
-  { value: 30 },
-  { value: 25 },
-  { value: 18 },
-  { value: 35 },
-  { value: 40 },
-  { value: 28 },
-  { value: 32 },
-  { value: 36 },
-];
-
 interface LargeMinProps {
   onLogs: LogHistoryForMinute;
 }

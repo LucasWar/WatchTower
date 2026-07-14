@@ -4,23 +4,8 @@ import GraphicArea from "@/app/_components/graphic-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FindAvgLatencyResponse } from "../types";
 
-const data = [
-  { value: 10 },
-  { value: 10 },
-  { value: 9 },
-  { value: 12 },
-  { value: 20 },
-  { value: 6 },
-  { value: 60 },
-  { value: 35 },
-  { value: 40 },
-  { value: 28 },
-  { value: 32 },
-  { value: 36 },
-];
-
 interface AvgLantencyProps {
-  onLatencys?: FindAvgLatencyResponse[];
+  onLatencys: FindAvgLatencyResponse[];
 }
 
 export default function AvgLantency({onLatencys}: AvgLantencyProps) {
@@ -31,7 +16,7 @@ export default function AvgLantency({onLatencys}: AvgLantencyProps) {
       </CardHeader>
       <CardContent className="w-full h-screen">
         <div className="flex gap-3">
-          <p className="text-3xl font-medium">112ms</p>
+          <p className="text-3xl font-medium">{onLatencys.length == 0 ? 0 : onLatencys[0].p95_latency} ms</p>
           <div className="text-sm flex items-end justify-center">
             <span className="text-slate-500">
               stable

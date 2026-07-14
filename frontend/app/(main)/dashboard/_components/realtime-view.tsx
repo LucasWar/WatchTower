@@ -10,6 +10,7 @@ interface RealtimeViewProps {
 
 export default function RealtimeView({onTotalLogsAndErro}: RealtimeViewProps) {
   let data;
+  console.log(onTotalLogsAndErro)
   if(onTotalLogsAndErro){
     data = onTotalLogsAndErro.map((data) => {
       return {

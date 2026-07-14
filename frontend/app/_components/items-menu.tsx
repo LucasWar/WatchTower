@@ -1,6 +1,6 @@
 "use client";
 
-import { FileArchive, LayoutDashboard, Settings } from "lucide-react";
+import { FileArchive, LayoutDashboard, Settings, ChartBarDecreasing, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,12 +20,12 @@ export default function ItemsMenu() {
     {
       label: "Alertas",
       href: "/alertas",
-      icon: Settings,
+      icon: TriangleAlert,
     },
     {
       label: "Metricas",
       href: "/metricas",
-      icon: Settings,
+      icon: ChartBarDecreasing,
     },
     {
       label: "Configurações",

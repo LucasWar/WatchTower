@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import ItemsMenu from "./_components/items-menu";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Providers from "./providers";
+import { AuthProvider } from "@/contexts/auth.context";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -37,13 +38,13 @@ export default function RootLayout({
         className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
       >
         <body className="min-h-full flex flex-col">
-          <div className="flex">
-            <div className="flex flex-col bg-primary-color min-h-screen w-75 items-center justify-center border-r border-white/10">
-              <h1 className="font-medium text-2xl mb-8 mt-5 text-white">Wtach Tower</h1>
-              <ItemsMenu />
-            </div>
-            <Providers><div className="min-h-full w-full bg-secondary-color">{children}</div></Providers>
-          </div>
+          <Providers>
+            <AuthProvider>
+              <div className="min-h-full w-full bg-secondary-color">
+                {children}
+              </div>
+            </AuthProvider>
+          </Providers>
         </body>
       </html>
   );
